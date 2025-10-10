@@ -1,0 +1,52 @@
+{
+  "exportedAt": "2025-10-10T11:42:33.151Z",
+  "accounts": [
+    {
+      "id": "mgiix2w3dtwza2",
+      "role": "teacher",
+      "email": "t1@gmail.com",
+      "passwordHash": "55sxq3e2fc/l2ys5BEYdvA==$z27E05NrqtN9diCHh07Yi7pMWYROHR7YsZ/VoQXshY4=",
+      "channelId": "mgij3h25vi40pj",
+      "emailVerified": true,
+      "failedAttempts": 0,
+      "lockedUntil": 0,
+      "createdAt": 1759960295139
+    },
+    {
+      "id": "mgij0whe23w8by",
+      "role": "student",
+      "email": "student_mgij0w@local.test",
+      "passwordHash": "h6xCjLMQauXFlo8K2g6SnA==$LhwGwRlLGPDFHsfBT3KFQkvcnyG+RYrrOcPp/PSoWec=",
+      "channelId": "mgiizc915cu4y0",
+      "oneTimeCode": "212367",
+      "createdAt": 1759960473458,
+      "emailVerified": false,
+      "failedAttempts": 0,
+      "lockedUntil": 0
+    },
+    {
+      "id": "mgij16oq1413py",
+      "role": "student",
+      "email": "student_mgij16@local.test",
+      "passwordHash": "12dizrKXP0h2IJu4ZeGbGA==$VAzEkIhYDNuHVeZbjNXHQ9Yl58QyNnW9PPDqwu9Yrr0=",
+      "channelId": "mgiizc915cu4y0",
+      "oneTime": true,
+      "createdAt": 1759960486682,
+      "emailVerified": false,
+      "failedAttempts": 0,
+      "lockedUntil": 0
+    },
+    {
+      "id": "mgjlgd6xjtmejc",
+      "role": "student",
+      "email": "student_mgjlgd@local.test",
+      "passwordHash": "aBD0jmsqpv5ntaXwh8TGow==$UN4HUZquy/dUa23y2wIzYrc4g69phm7zqxJHBV2ti0U=",
+      "channelId": "mgij3h25vi40pj",
+      "oneTimeCode": "299039",
+      "createdAt": 1760025020361,
+      "emailVerified": false,
+      "failedAttempts": 0,
+      "lockedUntil": 0
+    }
+  ]
+}
