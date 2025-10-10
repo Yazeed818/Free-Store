@@ -1,0 +1,784 @@
+<!doctype html>
+<html lang="ar">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>A+ — متجر التطبيقات (متكامل)</title>
+  <meta name="description" content="A+ — متجر التطبيقات المحلي: رفع ملفات، شعار، صفحة منتج مفصّلة، طلبات مع EID/SEID، وإدارة كاملة." />
+  <style>
+    :root{
+      --bg:#071427; --card:#0b2233; --accent:#06b6d4; --muted:#9fb0c8; --glass: rgba(255,255,255,0.03);
+    }
+    *{box-sizing:border-box;font-family:Inter,system-ui,Segoe UI,Arial;direction:rtl}
+    html,body{height:100%;margin:0;background:linear-gradient(180deg,#031026 0%,#061329 100%);color:#e6eef6}
+    .wrap{max-width:1200px;margin:20px auto;padding:20px}
+    header{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .brand{display:flex;gap:12px;align-items:center}
+    .logo{width:56px;height:56px;border-radius:12px;background:linear-gradient(135deg,var(--accent),#7c3aed);display:flex;align-items:center;justify-content:center;font-weight:800}
+    h1{margin:0;font-size:20px}
+    .sub{color:var(--muted);font-size:13px}
+    nav .btn{background:transparent;border:1px solid rgba(255,255,255,0.06);padding:8px 12px;border-radius:8px;color:inherit;cursor:pointer}
+    .hero{margin-top:16px;padding:18px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);display:flex;justify-content:space-between;align-items:center}
+    .grid{display:grid;grid-template-columns:320px 1fr;gap:18px;margin-top:18px}
+    .card{background:linear-gradient(180deg,var(--card),#071827);padding:16px;border-radius:12px;box-shadow:0 8px 30px rgba(2,6,23,0.6)}
+    input,select,button,textarea{font-size:14px;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:#071827;color:inherit}
+    label{font-size:13px;margin-bottom:6px}
+    .small{font-size:13px;color:var(--muted)}
+    .list{display:flex;flex-direction:column;gap:10px;margin-top:10px}
+    .item{padding:12px;border-radius:10px;background:var(--glass);display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .meta{font-size:13px;color:var(--muted)}
+    .watermark{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%) rotate(-25deg);opacity:0.06;font-size:48px;pointer-events:none;user-select:none;z-index:3000}
+    .block-overlay{position:fixed;inset:0;background:rgba(7,18,39,0.96);z-index:4000;color:#fff;display:none;align-items:center;justify-content:center;flex-direction:column;padding:20px}
+    footer{margin-top:18px;text-align:center;color:var(--muted);font-size:13px}
+    .controls{display:flex;gap:8px;align-items:center}
+    .modal-backdrop{position:fixed;inset:0;background:rgba(2,6,23,0.6);display:none;align-items:center;justify-content:center;z-index:5000}
+    .modal{width:880px;background:#071827;padding:18px;border-radius:12px;max-height:90vh;overflow:auto}
+    .form-row{margin-bottom:10px;display:flex;flex-direction:column}
+    .pw-meter{height:8px;border-radius:6px;background:rgba(255,255,255,0.04);overflow:hidden}
+    .pw-meter > div{height:100%;width:0%}
+    .btn{background:transparent;border:1px solid rgba(255,255,255,0.06);padding:8px 12px;border-radius:8px;color:inherit;cursor:pointer}
+    .top-actions{display:flex;gap:8px;align-items:center}
+    .badge{background:rgba(255,255,255,0.03);padding:6px 10px;border-radius:999px;font-size:13px}
+    .file-item{display:flex;flex-direction:column;gap:6px}
+    .row{display:flex;gap:8px;align-items:center}
+    .muted{color:var(--muted)}
+    .danger{color:#ff6b6b}
+    .success{color:#4ade80}
+    pre{white-space:pre-wrap}
+    .app-logo{width:72px;height:72px;border-radius:12px;object-fit:cover;border:1px solid rgba(255,255,255,0.04);margin-left:8px}
+    .channel-entry{display:flex;align-items:center;gap:12px}
+    .tabs{display:flex;gap:8px;margin-bottom:10px}
+    .thumb{width:80px;height:80px;border-radius:8px;object-fit:cover;border:1px solid rgba(255,255,255,0.04)}
+    @media(max-width:920px){.grid{grid-template-columns:1fr}.modal{width:94%}}
+  </style>
+</head>
+<body>
+  <div class="watermark" id="watermark">A+</div>
+
+  <div class="block-overlay" id="blocker">
+    <h2>تم حظر الوصول</h2>
+    <p id="blockReason" class="muted">تم اكتشاف سلوك غير مسموح.</p>
+    <div style="margin-top:12px"><button id="unblockBtn" class="btn">إلغاء الحظر (اختباري)</button></div>
+  </div>
+
+  <div class="wrap">
+    <header>
+      <div class="brand">
+        <div class="logo">A+</div>
+        <div>
+          <h1>A+ — نظام متجر التطبيقات</h1>
+          <div class="sub">رفع تطبيقات، صفحة منتج مفصّلة، طلبات مع EID/SEID، وإدارة كاملة محليًا.</div>
+        </div>
+      </div>
+      <nav id="topNav"></nav>
+    </header>
+
+    <div class="hero card">
+      <div>
+        <h2>متجر التطبيقات A+</h2>
+        <p class="small">سجّل كمطوّر لإضافة تطبيقاتك، أو كمستخدم لطلب وتحميل التطبيقات بعد الموافقة.</p>
+      </div>
+      <div class="top-actions">
+        <div class="badge"><span id="statusMsg">جاهز</span></div>
+        <div style="display:flex;gap:8px">
+          <button id="ctaRegister" class="btn">سجّل الآن</button>
+          <button id="openStore" class="btn">فتح المتجر</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid">
+      <aside id="leftPanel" class="card"></aside>
+      <main id="mainPanel" class="card"></main>
+    </div>
+
+    <footer>ملف HTML واحد جاهز للتشغيل محليًا. لإرسال إيميلات أو تسليم تلقائي عبر الإنترنت تحتاج سيرفر SMTP/Backend.</footer>
+  </div>
+
+  <div id="modalRoot" class="modal-backdrop" aria-hidden="true"></div>
+<script>
+/* ============================================================
+  ملف كامل — index.html (الجزء الثاني)
+  - كل الدوال مدموجة: تسجيل/تفعيل/دخول/استعادة، متجر، إدارة، رفع ملفات، طلبات، إلخ.
+  ============================================================ */
+
+const DB_NAME = 'a_plus_prod_v3';
+const DB_VER = 3;
+
+const $ = s => document.querySelector(s);
+const uid = ()=> Date.now().toString(36) + Math.random().toString(36).slice(2,8);
+let currentUser = null;
+let sessionToken = null;
+let blocked = false;
+let sessionChecker = null;
+
+/* ---------------- crypto helpers ---------------- */
+function toBase64(buf){ let binary=''; const view=new Uint8Array(buf); for(let i=0;i<view.length;i++) binary+=String.fromCharCode(view[i]); return btoa(binary); }
+function fromBase64(b64){ const bin=atob(b64); const arr=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) arr[i]=bin.charCodeAt(i); return arr; }
+async function hashPassword(password){ const enc=new TextEncoder().encode(password); const salt=crypto.getRandomValues(new Uint8Array(16)); const key=await crypto.subtle.importKey('raw',enc,'PBKDF2',false,['deriveBits']); const derived=await crypto.subtle.deriveBits({name:'PBKDF2',salt,iterations:200000,hash:'SHA-256'},key,256); return `${toBase64(salt)}$${toBase64(derived)}`; }
+async function verifyPassword(password, stored){ if(!stored||typeof stored!=='string') return false; const parts=stored.split('$'); if(parts.length!==2) return false; const salt=fromBase64(parts[0]); const expected=parts[1]; const enc=new TextEncoder().encode(password); const key=await crypto.subtle.importKey('raw',enc,'PBKDF2',false,['deriveBits']); const derived=await crypto.subtle.deriveBits({name:'PBKDF2',salt,iterations:200000,hash:'SHA-256'},key,256); return toBase64(derived)===expected; }
+
+/* ---------------- IndexedDB helpers ---------------- */
+function openDB(){ return new Promise((resolve,reject)=>{ try{ const req=indexedDB.open(DB_NAME,DB_VER); req.onupgradeneeded=e=>{ const db=e.target.result; if(!db.objectStoreNames.contains('accounts')) db.createObjectStore('accounts',{keyPath:'id'}); if(!db.objectStoreNames.contains('channels')) db.createObjectStore('channels',{keyPath:'id'}); if(!db.objectStoreNames.contains('folders')) db.createObjectStore('folders',{keyPath:'id'}); if(!db.objectStoreNames.contains('files')) db.createObjectStore('files',{keyPath:'id'}); if(!db.objectStoreNames.contains('verifications')) db.createObjectStore('verifications',{keyPath:'id'}); if(!db.objectStoreNames.contains('sessions')) db.createObjectStore('sessions',{keyPath:'token'}); if(!db.objectStoreNames.contains('orders')) db.createObjectStore('orders',{keyPath:'id'}); }; req.onsuccess=()=>resolve(req.result); req.onerror=()=>reject(req.error||new Error('IDB open error')); }catch(err){ reject(err);} }); }
+async function idbPut(store,val){ const db=await openDB(); return new Promise((res,rej)=>{ const tx=db.transaction(store,'readwrite'); const os=tx.objectStore(store); const r=os.put(val); r.onsuccess=()=>res(true); r.onerror=e=>rej(e.target.error||new Error('put failed')); }); }
+async function idbGetAll(store){ const db=await openDB(); return new Promise((res,rej)=>{ const tx=db.transaction(store,'readonly'); const req=tx.objectStore(store).getAll(); req.onsuccess=()=>res(req.result||[]); req.onerror=e=>rej(e.target.error||new Error('getAll failed')); }); }
+async function idbGet(store,key){ const db=await openDB(); return new Promise((res,rej)=>{ const tx=db.transaction(store,'readonly'); const req=tx.objectStore(store).get(key); req.onsuccess=()=>res(req.result); req.onerror=e=>rej(e.target.error||new Error('get failed')); }); }
+async function idbDelete(store,key){ const db=await openDB(); return new Promise((res,rej)=>{ const tx=db.transaction(store,'readwrite'); const req=tx.objectStore(store).delete(key); req.onsuccess=()=>res(true); req.onerror=e=>rej(e.target.error||new Error('delete failed')); }); }
+
+/* ---------------- utilities ---------------- */
+async function downloadAccountsBackup(){ try{ const accounts=await idbGetAll('accounts').catch(()=>[]); const data={exportedAt:new Date().toISOString(),accounts}; const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=`a_plus_accounts_${(new Date()).toISOString().replace(/[:.]/g,'-')}.json`; a.click(); setTimeout(()=>URL.revokeObjectURL(url),3000);}catch(e){console.warn('backup failed',e);} }
+function createCard(html){ const d=document.createElement('div'); d.className='card'; d.innerHTML=html; return d; }
+function showModal(html){ const root=$('#modalRoot'); if(!root) return; root.style.display='flex'; root.setAttribute('aria-hidden','false'); root.innerHTML=html; }
+function closeModal(){ const root=$('#modalRoot'); if(!root) return; root.style.display='none'; root.setAttribute('aria-hidden','true'); root.innerHTML=''; }
+function escapeHtml(s){ if(!s) return ''; return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[c])); }
+function simpleEmailCheck(email){ if(!email) return false; const at=email.indexOf('@'); const dot=email.lastIndexOf('.'); return at>0 && dot>at+1 && dot<email.length-1; }
+async function fileToArrayBufferBlob(file){ return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>{ res(new Blob([r.result],{type:file.type})); }; r.onerror=rej; r.readAsArrayBuffer(file); }); }
+
+/* ---------------- session ---------------- */
+async function createSession(userId, remember=false){ const token=uid(); const expires=Date.now() + (remember?1000*60*60*24*30:1000*60*60*4); sessionToken={token,userId,expires}; await idbPut('sessions',sessionToken).catch(()=>{}); sessionStorage.setItem('a_plus_session',JSON.stringify(sessionToken)); if(remember) localStorage.setItem('a_plus_session_remember',JSON.stringify(sessionToken)); return sessionToken; }
+async function loadSessionFromStorage(){ try{ let s=sessionStorage.getItem('a_plus_session')||localStorage.getItem('a_plus_session_remember'); if(!s) return null; s=JSON.parse(s); if(!s||!s.token) return null; const st=await idbGet('sessions',s.token).catch(()=>null); if(!st) return null; if(Date.now()>st.expires){ await idbDelete('sessions',st.token); sessionStorage.removeItem('a_plus_session'); localStorage.removeItem('a_plus_session_remember'); return null; } sessionToken=st; return st;}catch(e){return null;} }
+async function endSession(){ try{ if(sessionToken && sessionToken.token) await idbDelete('sessions',sessionToken.token); }catch(e){} sessionToken=null; currentUser=null; sessionStorage.removeItem('a_plus_session'); localStorage.removeItem('a_plus_session_remember'); sessionStorage.removeItem('currentUser'); await renderApp(); }
+
+/* ---------------- render / navigation ---------------- */
+async function renderAuthArea(){ const nav=$('#topNav'); if(!nav) return; if(currentUser){ nav.innerHTML=`<span class="small">${escapeHtml(currentUser.role||'')} — ${escapeHtml(currentUser.email||'')}${currentUser.emailVerified? ' (مؤكد)':''}</span> <span class="controls"><button id="logoutBtn" class="btn">خروج</button></span>`; $('#logoutBtn').onclick=async()=>{ await endSession(); }; } else { nav.innerHTML=`<div style="display:flex;gap:8px;align-items:center"><button id="btnRegister" class="btn">تسجيل</button> <button id="btnLogin" class="btn">دخول</button></div>`; $('#btnRegister').onclick=showRegisterModal; $('#btnLogin').onclick=showLoginModal; injectSearchUI(); } }
+
+async function renderApp(){ await renderAuthArea(); const left=$('#leftPanel'), main=$('#mainPanel'); if(!left||!main) return; left.innerHTML=''; main.innerHTML=''; if(blocked){ $('#blocker').style.display='flex'; return; } else $('#blocker').style.display='none'; if(!currentUser){ left.appendChild(createCard('<h3>ابدأ</h3><div class="small">سجّل كمطوّر لإضافة تطبيق وإدارة متجرك، أو كمستخدم لشراء تطبيقات.</div>')); main.appendChild(createCard('<h3>متجر التطبيقات</h3><div id="channelsList" class="list"></div>')); await renderChannelsList(); return; } if(currentUser.role==='teacher'){ left.appendChild(createCard(`<h3>لوحة المطوّر</h3><div class="small">حسابك: <span id="myAccount" class="muted">${escapeHtml(currentUser.email||'')}</span></div>`)); const actionsHtml=`<div class="list"><div class="item"><button id="createChannelBtn" class="btn">إضافة تطبيق يدوي</button></div><div class="item"><button id="importAppBtn" class="btn">استيراد تطبيق محلي (ZIP/APK)</button></div><div class="item"><button id="viewOrdersBtn" class="btn">عرض الطلبات</button></div><div class="item"><button id="downloadAccounts" class="btn">تنزيل نسخة الحسابات</button></div></div>`; left.appendChild(createCard(actionsHtml)); $('#createChannelBtn').onclick=teacherCreateChannel; $('#importAppBtn').onclick=teacherImportApp; $('#viewOrdersBtn').onclick=renderOrders; $('#downloadAccounts').onclick=downloadAccountsBackup; main.appendChild(createCard('<h3>إدارة المتجر</h3><div id="teacherContent"></div>')); await renderTeacherContent(); } else { left.appendChild(createCard('<h3>لوحة المستخدم</h3><div class="small">تصفح المتجر واطلب التطبيق الذي تريده.</div>')); main.appendChild(createCard('<h3>متجر التطبيقات</h3><div id="studentContent"></div>')); await renderStudentContent(); } }
+
+/* ---------------- search UI injection ---------------- */
+function injectSearchUI(){
+  const nav = $('#topNav'); if(!nav) return;
+  if(document.getElementById('storeSearch')) return; // already injected
+  const wrapper = document.createElement('div'); wrapper.style.display='flex'; wrapper.style.gap='8px'; wrapper.style.alignItems='center';
+  wrapper.innerHTML = `<input id="storeSearch" placeholder="ابحث في المتجر..." style="min-width:220px"> <select id="storeFilter"><option value="">كل الفئات</option><option value="plus">تطبيقات بلس</option><option value="games">ألعاب</option></select> <button id="searchBtn" class="btn">بحث</button>`;
+  nav.appendChild(wrapper);
+  document.getElementById('searchBtn').onclick = async ()=>{
+    const q = (document.getElementById('storeSearch')||{}).value.trim().toLowerCase();
+    const cat = (document.getElementById('storeFilter')||{}).value;
+    const all = await idbGetAll('channels');
+    const filtered = all.filter(c=>{
+      if(cat && c.category !== cat) return false;
+      if(!q) return true;
+      return (c.name||'').toLowerCase().includes(q) || (c.description||'').toLowerCase().includes(q);
+    });
+    const cont = $('#channelsList'); if(!cont) return;
+    cont.innerHTML = '';
+    if(!filtered.length){ cont.innerHTML = '<div class="small">لا نتائج</div>'; return; }
+    filtered.forEach(ch=>{
+      const logoHtml = ch.logoBlob ? `<img src="${URL.createObjectURL(ch.logoBlob)}" class="app-logo" alt="logo">` : `<div style="width:72px;height:72px;border-radius:12px;background:rgba(255,255,255,0.02);display:flex;align-items:center;justify-content:center;color:var(--muted)">لا شعار</div>`;
+      const el = document.createElement('div'); el.className='item';
+      el.innerHTML = `<div class="channel-entry"><div>${logoHtml}</div><div style="flex:1"><strong>${escapeHtml(ch.name)}</strong><div class="meta">${escapeHtml((ch.description||'').slice(0,140))}</div><div class="meta">السعر: ${(ch.price||0)} ريال</div></div></div><div style="display:flex;flex-direction:column;gap:6px"><button class="btn detailsBtn" data-id="${ch.id}">تفاصيل</button><button class="btn" data-id="${ch.id}" data-buy="1">اطلب التطبيق</button></div>`;
+      el.querySelector('.detailsBtn').onclick = ()=> showProductDetails(ch.id);
+      el.querySelector('button[data-buy]').onclick = ()=> showPurchaseModal(ch.id);
+      cont.appendChild(el);
+    });
+  };
+}
+
+/* ---------------- render channels / store list ---------------- */
+async function renderChannelsList(){
+  const list = await idbGetAll('channels').catch(()=>[]);
+  const cont = $('#channelsList'); if(!cont) return;
+  cont.innerHTML = '';
+  if(!list.length){ cont.innerHTML = '<div class="small">لا توجد تطبيقات بعد.</div>'; return; }
+
+  list.forEach(ch=>{
+    const logoHtml = ch.logoBlob ? `<img src="${URL.createObjectURL(ch.logoBlob)}" class="app-logo" alt="logo">` :
+      `<div style="width:72px;height:72px;border-radius:12px;background:rgba(255,255,255,0.02);display:flex;align-items:center;justify-content:center;color:var(--muted)">لا شعار</div>`;
+    const shortDesc = ch.description ? escapeHtml(ch.description).slice(0,140) : 'وصف قصير للتطبيق...';
+    const el = document.createElement('div'); el.className='item';
+    el.innerHTML = `
+      <div class="channel-entry" style="flex:1">
+        <div>${logoHtml}</div>
+        <div style="flex:1">
+          <strong>${escapeHtml(ch.name)}</strong>
+          <div class="meta">${shortDesc}</div>
+          <div class="meta">السعر: ${(ch.price||0)} ريال</div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <button class="btn detailsBtn" data-id="${ch.id}">تفاصيل</button>
+        <button class="btn" data-id="${ch.id}" data-buy="1">اطلب التطبيق</button>
+      </div>
+    `;
+    el.querySelector('.detailsBtn').onclick = ()=> showProductDetails(ch.id);
+    el.querySelector('button[data-buy]').onclick = ()=> showPurchaseModal(ch.id);
+    cont.appendChild(el);
+  });
+}
+
+/* ---------------- product details modal (صفحة المنتج) ---------------- */
+async function showProductDetails(appId){
+  const ch = await idbGet('channels', appId);
+  if(!ch) return alert('التطبيق غير موجود');
+  const files = (await idbGetAll('files')).filter(f=>f.channelId===appId);
+  const images = [];
+  if(ch.logoBlob) images.push({url: URL.createObjectURL(ch.logoBlob), alt: ch.logoFilename||'شعار'});
+  files.forEach(f=>{
+    if((f.type||'').indexOf('image')===0) images.push({url: URL.createObjectURL(f.blob), alt: f.filename});
+  });
+
+  const description = ch.description ? escapeHtml(ch.description) : 'وصف كامل للتطبيق هنا...';
+  const howto = ch.installInstructions ? escapeHtml(ch.installInstructions) : `خطوات التثبيت:
+1. حمّل الملف.
+2. اتبع التعليمات داخل الحزمة.
+3. تواصل مع المطور عند الحاجة.`;
+
+  const reviews = ch.reviews || [];
+
+  let html = `<div class="modal" role="dialog" aria-modal="true"><h3>${escapeHtml(ch.name)}</h3>`;
+  html += `<div style="display:flex;gap:12px;align-items:flex-start;margin-bottom:8px">`;
+  // Left: carousel + thumbs
+  html += `<div style="flex:1">`;
+  html += renderProductCarousel(images);
+  html += `</div>`;
+  // Right: summary
+  html += `<div style="width:320px">`;
+  html += `<div class="form-row"><strong>السعر: ${(ch.price||0)} ريال</strong></div>`;
+  html += `<div class="form-row"><strong>الفئة:</strong> <div class="small">${escapeHtml(ch.category||'عام')}</div></div>`;
+  html += `<div style="display:flex;gap:8px;margin-top:8px"><button id="detailBuyBtn" class="btn">اطلب الآن</button><button id="detailDownloadBtn" class="btn">تحميل الملف (للمطور)</button><button id="detailCloseBtn" class="btn">إغلاق</button></div>`;
+  html += `</div></div>`;
+
+  html += `<div class="tabs"><button class="btn tabBtn" data-tab="overview">نظرة عامة</button><button class="btn tabBtn" data-tab="install">طريقة التثبيت</button><button class="btn tabBtn" data-tab="faq">الأسئلة</button><button class="btn tabBtn" data-tab="reviews">مراجعات (${reviews.length})</button></div>`;
+
+  html += `<div id="tabContent"><div data-tabcontent="overview"><pre style="white-space:pre-wrap">${description}</pre></div><div data-tabcontent="install" style="display:none">${howto}</div><div data-tabcontent="faq" style="display:none">لا توجد أسئلة شائعة بعد.</div><div data-tabcontent="reviews" style="display:none">${reviews.map(r=>`<div class="item"><div><strong>${escapeHtml(r.name||'مستخدم')}</strong><div class="meta">${escapeHtml(r.text||'')}</div></div></div>`).join('')}</div></div>`;
+
+  html += `</div>`;
+  showModal(html);
+
+  setTimeout(()=>{
+    document.querySelectorAll('.tabBtn').forEach(b=>{
+      b.onclick = ()=>{
+        const t = b.dataset.tab;
+        document.querySelectorAll('[data-tabcontent]').forEach(c=> c.style.display = (c.getAttribute('data-tabcontent')===t ? 'block' : 'none'));
+      };
+    });
+    document.querySelector('.tabBtn[data-tab="overview"]').click();
+
+    document.getElementById('detailCloseBtn').onclick = closeModal;
+    document.getElementById('detailBuyBtn').onclick = ()=>{ closeModal(); showPurchaseModal(appId); };
+    document.getElementById('detailDownloadBtn').onclick = async ()=>{
+      if(ch.primaryFileId){
+        const f = await idbGet('files', ch.primaryFileId);
+        if(f){
+          const url = URL.createObjectURL(f.blob);
+          window.open(url, '_blank');
+        } else alert('لم يتم العثور على ملف التطبيق الرئيسي.');
+      } else alert('لا يوجد ملف تطبيق مرتبط بهذا التطبيق.');
+    };
+  },80);
+}
+
+/* ---------------- small product carousel renderer ---------------- */
+function renderProductCarousel(images){
+  if(!images || !images.length) return `<div style="width:100%;height:220px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.02);color:var(--muted)">لا صور</div>`;
+  let html = `<div style="display:flex;flex-direction:column;gap:8px"><div id="carouselMain" style="width:100%;height:260px;display:flex;align-items:center;justify-content:center;background:#000;border-radius:8px;overflow:hidden"><img id="carouselImg" src="${images[0].url}" alt="${escapeHtml(images[0].alt||'')}" style="max-width:100%;max-height:100%"></div><div style="display:flex;gap:8px;flex-wrap:wrap">`;
+  images.forEach((im,i)=> html += `<button class="btn smallThumb" data-idx="${i}" style="padding:6px"><img src="${im.url}" class="thumb" alt="${escapeHtml(im.alt||'')}"></button>`);
+  html += `</div></div>`;
+  setTimeout(()=>{ document.querySelectorAll('.smallThumb').forEach(btn=> btn.onclick = ()=>{ const idx = parseInt(btn.dataset.idx||'0'); const img = document.getElementById('carouselImg'); if(img) img.src = images[idx].url; }); },80);
+  return html;
+}
+
+/* ---------------- purchase modal (الآن يطلب نوع الجهاز، موديل، EID/SEID) ---------------- */
+function showPurchaseModal(appId){
+  showModal(`<div class="modal">
+    <h3>طلب التطبيق</h3>
+    <div class="form-row"><label>اسمك</label><input id="buyerName"></div>
+    <div class="form-row"><label>البريد الإلكتروني لاستلام الملف</label><input id="buyerEmail" type="email"></div>
+    <div class="form-row"><label>نوع الجوال (مثال: Samsung/Huawei/iPhone)</label><input id="phoneType" placeholder="مثال: Samsung"></div>
+    <div class="form-row"><label>موديل الجوال (مثال: Galaxy S21)</label><input id="phoneModel" placeholder="مثال: Galaxy S21"></div>
+    <div class="form-row"><label>EID أو SEID (انسخه من جهازك)</label><input id="eid" placeholder="EID / SEID"></div>
+    <div class="form-row"><label>إرفاق إيصال التحويل (صورة/PDF)</label><input id="receiptFile" type="file" accept="image/*,application/pdf"></div>
+    <div style="margin-top:8px" class="form-row"><button id="submitOrder" class="btn">أرسل الطلب</button> <button id="cancelOrder" class="btn">إلغاء</button></div>
+  </div>`);
+  document.getElementById('cancelOrder').onclick = closeModal;
+  document.getElementById('submitOrder').onclick = async ()=>{
+    const name = (document.getElementById('buyerName')||{}).value || '';
+    const email = ((document.getElementById('buyerEmail')||{}).value || '').trim().toLowerCase();
+    const phoneType = ((document.getElementById('phoneType')||{}).value || '').trim();
+    const phoneModel = ((document.getElementById('phoneModel')||{}).value || '').trim();
+    const eid = ((document.getElementById('eid')||{}).value || '').trim();
+    const f = (document.getElementById('receiptFile')||{}).files[0];
+
+    if(!name || !email) return alert('املأ الاسم والإيميل');
+    if(!simpleEmailCheck(email)) return alert('بريد غير صحيح');
+    if(!phoneType) return alert('أدخل نوع الجوال (إجباري)');
+    if(!phoneModel) return alert('أدخل موديل الجوال (إجباري)');
+    if(!eid) return alert('أدخل EID أو SEID (إجباري)');
+
+    let receiptBlob = null;
+    if(f){
+      if(f.size > 10*1024*1024) return alert('الحد الأقصى لحجم الإيصال 10MB');
+      receiptBlob = await fileToArrayBufferBlob(f);
+    }
+
+    const order = {
+      id: uid(),
+      appId,
+      buyerName: name,
+      buyerEmail: email,
+      phoneType,
+      phoneModel,
+      eid,
+      receiptBlob,
+      status: 'pending',
+      createdAt: Date.now()
+    };
+    await idbPut('orders', order);
+    alert('تم إرسال الطلب — سيتم مراجعته من قبل المطوّر');
+    closeModal();
+  };
+}
+
+/* ---------------- teacher: import app + create app (الآن يخزن description, installInstructions, category) ---------------- */
+async function teacherImportApp(){
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.zip,application/vnd.android.package-archive,*/*';
+  input.onchange = async ()=>{
+    const f = input.files[0]; if(!f) return;
+    const name = f.name || 'تطبيق محلي';
+    const price = 18;
+    const chId = uid();
+    const ch = {
+      id: chId,
+      name,
+      ownerId: currentUser ? currentUser.id : 'local',
+      createdAt: Date.now(),
+      price,
+      logoBlob: null,
+      logoFilename: '',
+      primaryFileId: '',
+      description: 'وصف افتراضي للتطبيق. عدّل الوصف من إدارة التطبيق.',
+      installInstructions: 'تعليمات التثبيت الافتراضية.',
+      category: 'general',
+      reviews: []
+    };
+    await idbPut('channels', ch);
+    const blob = await fileToArrayBufferBlob(f);
+    const fileItem = { id: uid(), channelId: chId, title: name, filename: f.name, type: f.type || 'application/octet-stream', blob, folderId: '', uploadedAt: Date.now() };
+    await idbPut('files', fileItem);
+    const ch2 = await idbGet('channels', chId);
+    ch2.primaryFileId = fileItem.id;
+    await idbPut('channels', ch2);
+
+    if(confirm('هل تريد اختيار شعار/صورة للتطبيق الآن؟')){
+      const logoInp=document.createElement('input'); logoInp.type='file'; logoInp.accept='image/*';
+      logoInp.onchange = async ()=>{ const lf=logoInp.files[0]; if(!lf) return; if(lf.size>2*1024*1024) return alert('حجم الشعار يجب أن يكون أقل من 2MB'); const lblob = await fileToArrayBufferBlob(lf); const ch3 = await idbGet('channels', chId); ch3.logoBlob = lblob; ch3.logoFilename = lf.name; await idbPut('channels', ch3); alert('تم إضافة الشعار'); await renderApp(); };
+      logoInp.click();
+    }
+    alert('تم استيراد التطبيق المحلي: ' + name + '\nالسعر: ' + price + ' ريال');
+    await renderApp();
+  };
+  input.click();
+}
+
+async function teacherCreateChannel(){
+  const name = prompt('اسم التطبيق/القسم'); if(!name) return alert('مطلوب اسم التطبيق');
+  const priceInput = prompt('سعر التطبيق بالريال (مثال: 18)', '0'); if(priceInput===null) return;
+  const price = parseFloat(priceInput) || 0;
+  const description = prompt('وصف التطبيق (أدخل وصف مختصر أو اترك فارغ)', '') || 'وصف افتراضي للتطبيق';
+  const installInstructions = prompt('تعليمات التثبيت (اختياري)', '') || 'تعليمات التثبيت الافتراضية';
+  const category = prompt('الفئة (مثال: plus, games, utilities)', 'general') || 'general';
+
+  const id = uid();
+  const ch = {
+    id,
+    name,
+    ownerId: currentUser.id,
+    createdAt: Date.now(),
+    price,
+    logoBlob: null,
+    logoFilename: '',
+    primaryFileId: '',
+    description,
+    installInstructions,
+    category,
+    reviews: []
+  };
+  await idbPut('channels', ch);
+
+  if(confirm('هل تريد رفع ملف التطبيق (ZIP/APK) الآن؟')){
+    const appInp = document.createElement('input'); appInp.type='file'; appInp.accept='.zip,application/vnd.android.package-archive,*/*';
+    appInp.onchange = async ()=>{ const f = appInp.files[0]; if(!f) return; if(f.size > 400*1024*1024) return alert('الحد الأقصى للملف 400MB'); const blob = await fileToArrayBufferBlob(f); const fileItem = { id: uid(), channelId: id, title: f.name, filename: f.name, type: f.type||'application/octet-stream', blob, folderId:'', uploadedAt: Date.now() }; await idbPut('files', fileItem); const ch2 = await idbGet('channels', id); ch2.primaryFileId = fileItem.id; await idbPut('channels', ch2); alert('تم رفع ملف التطبيق'); await renderApp(); };
+    appInp.click();
+  }
+
+  if(confirm('هل تريد رفع شعار للتطبيق الآن؟')){
+    const logoInp=document.createElement('input'); logoInp.type='file'; logoInp.accept='image/*';
+    logoInp.onchange = async ()=>{ const lf=logoInp.files[0]; if(!lf) return; if(lf.size>2*1024*1024) return alert('حجم الشعار يجب أن يكون أقل من 2MB'); const lblob=await fileToArrayBufferBlob(lf); const ch2=await idbGet('channels',id); ch2.logoBlob=lblob; ch2.logoFilename=lf.name; await idbPut('channels',ch2); alert('تم إضافة الشعار'); await renderApp(); };
+    logoInp.click();
+  }
+
+  await renderApp();
+  alert('تم إضافة التطبيق: '+name+'\nمعرّف التطبيق: '+id+'\nسعر: '+price+' ريال');
+}
+
+/* ---------------- render teacher content ---------------- */
+async function renderTeacherContent(){
+  const cont = $('#teacherContent'); if(!cont) return; cont.innerHTML='';
+  const channels = (await idbGetAll('channels')).filter(c=> c.ownerId === currentUser.id);
+  if(!channels.length){ cont.innerHTML = '<div class="small">لم تقم بإضافة تطبيقات بعد.</div>'; return; }
+  const html = channels.map(ch=>{
+    const logo = ch.logoBlob ? `<img src="${URL.createObjectURL(ch.logoBlob)}" class="app-logo" alt="logo">` : `<div style="width:72px;height:72px;border-radius:12px;background:rgba(255,255,255,0.02);display:flex;align-items:center;justify-content:center;color:var(--muted)">لا شعار</div>`;
+    return `<div class="item"><div class="channel-entry"><div>${logo}</div><div style="flex:1"><strong>${escapeHtml(ch.name)}</strong><div class="meta">ID: ${ch.id} — السعر: ${ch.price||0} ريال</div><div class="meta">${escapeHtml((ch.description||'').slice(0,120))}</div></div></div><div style="display:flex;flex-direction:column;gap:6px"><button data-id="${ch.id}" class="btn manageApp">إدارة</button><button data-id="${ch.id}" class="btn viewOrdersApp">طلبات التطبيق</button></div></div>`;
+  }).join('');
+  cont.appendChild(createCard(html));
+  cont.querySelectorAll('.manageApp').forEach(b=> b.onclick=async e=>{ const id=e.target.dataset.id; manageApp(id); });
+  cont.querySelectorAll('.viewOrdersApp').forEach(b=> b.onclick=async e=>{ const id=e.target.dataset.id; renderOrdersForApp(id); });
+}
+
+/* ---------------- manage a single app (رفع ملف داخل الإدارة، شعار، حذف) ---------------- */
+async function manageApp(appId){
+  const ch = await idbGet('channels', appId);
+  if(!ch) return alert('التطبيق غير موجود');
+  const files = (await idbGetAll('files')).filter(f=>f.channelId===appId);
+  const orders = (await idbGetAll('orders')).filter(o=>o.appId===appId);
+  let html = `<h3>إدارة ${escapeHtml(ch.name)}</h3>`;
+  const logoHtml = ch.logoBlob ? `<img src="${URL.createObjectURL(ch.logoBlob)}" class="app-logo" alt="logo">` : `<div style="width:72px;height:72px;border-radius:12px;background:rgba(255,255,255,0.02);display:flex;align-items:center;justify-content:center;color:var(--muted)">لا شعار</div>`;
+  html += `<div class="form-row"><label>الشعار</label><div>${logoHtml}</div><div style="margin-top:8px"><button id="changeLogo" class="btn">تغيير الشعار</button> <button id="removeLogo" class="btn">إزالة الشعار</button></div></div>`;
+
+  html += `<div class="form-row"><label>تفاصيل التطبيق</label><div class="small">الوصف: ${escapeHtml(ch.description||'')}</div><div class="small">تعليمات التثبيت: ${escapeHtml(ch.installInstructions||'')}</div><div class="small">الفئة: ${escapeHtml(ch.category||'')}</div></div>`;
+
+  html += '<div class="form-row"><label>ملف التطبيق (تعيينه كملف رئيسي)</label>';
+  if(ch.primaryFileId){ const primary = await idbGet('files', ch.primaryFileId); if(primary) html += `<div class="small">الملف الرئيسي: ${escapeHtml(primary.filename)}</div>`; } else html += `<div class="small">لا يوجد ملف تطبيق مرتبط</div>`;
+  html += `<div style="margin-top:8px"><button id="uploadAppFile" class="btn">رفع / تغيير ملف التطبيق</button></div></div>`;
+
+  html += '<div class="small">جميع الملفات المرتبطة:</div>';
+  html += files.length ? files.map(fi=>`<div class="item"><div><strong>${escapeHtml(fi.title)}</strong><div class="meta">${escapeHtml(fi.filename)}</div></div><div><button data-id="${fi.id}" class="btn viewFile">عرض</button> <button data-del="${fi.id}" class="btn">حذف الملف</button></div></div>`).join('') : '<div class="small">لا ملفات</div>';
+
+  html += '<hr><div class="small">الطلبات لهذا التطبيق:</div>';
+  html += orders.length ? orders.map(o=>`<div class="item"><div><strong>${escapeHtml(o.buyerName)}</strong><div class="meta">${escapeHtml(o.buyerEmail)} — ${new Date(o.createdAt).toLocaleString()}</div><div class="meta">الجهاز: ${escapeHtml(o.phoneType||'')} ${escapeHtml(o.phoneModel||'')}</div><div class="meta">EID/SEID: ${escapeHtml(o.eid||'')}</div><div class="meta">الحالة: ${o.status}</div></div><div><button data-id="${o.id}" class="btn viewOrder">عرض</button></div></div>`).join('') : '<div class="small">لا طلبات</div>';
+
+  html += `<div style="margin-top:12px"><button id="deleteAppBtn" class="btn danger">حذف التطبيق (وكل ملفاته والطلبات المرتبطة)</button> <button id="closeManage" class="btn">إغلاق</button></div>`;
+
+  showModal(`<div class="modal">${html}</div>`);
+  document.getElementById('closeManage').onclick = closeModal;
+
+  setTimeout(()=>{
+    document.querySelectorAll('.viewFile').forEach(btn=> btn.onclick=async e=>{ const fi = await idbGet('files', e.target.dataset.id); openFileViewer(fi); });
+    document.querySelectorAll('.item [data-del]').forEach(btn=> btn.onclick=async e=>{ if(!confirm('حذف الملف؟')) return; await idbDelete('files', e.target.dataset.del); alert('تم حذف الملف'); closeModal(); manageApp(appId); });
+
+    const changeBtn = document.getElementById('changeLogo');
+    if(changeBtn) changeBtn.onclick = async ()=> {
+      const inp=document.createElement('input'); inp.type='file'; inp.accept='image/*';
+      inp.onchange = async ()=>{ const f=inp.files[0]; if(!f) return; if(f.size>2*1024*1024) return alert('حجم الشعار يجب أن يكون أقل من 2MB'); const blob = await fileToArrayBufferBlob(f); const ch2 = await idbGet('channels', appId); ch2.logoBlob = blob; ch2.logoFilename = f.name; await idbPut('channels', ch2); alert('تم تحديث الشعار'); closeModal(); await renderApp(); };
+      inp.click();
+    };
+
+    const removeBtn = document.getElementById('removeLogo');
+    if(removeBtn) removeBtn.onclick = async ()=>{ if(!confirm('إزالة الشعار؟')) return; const ch2 = await idbGet('channels', appId); ch2.logoBlob = null; ch2.logoFilename = ''; await idbPut('channels', ch2); alert('تمت إزالة الشعار'); closeModal(); await renderApp(); };
+
+    const uploadAppFileBtn = document.getElementById('uploadAppFile');
+    if(uploadAppFileBtn) uploadAppFileBtn.onclick = async ()=> {
+      const inp=document.createElement('input'); inp.type='file'; inp.accept='.zip,application/vnd.android.package-archive,*/*';
+      inp.onchange = async ()=>{ const f=inp.files[0]; if(!f) return; if(f.size>400*1024*1024) return alert('الحد الأقصى للملف 400MB'); const blob = await fileToArrayBufferBlob(f); const fileItem = { id: uid(), channelId: appId, title: f.name, filename: f.name, type: f.type||'application/octet-stream', blob, folderId:'', uploadedAt: Date.now() }; await idbPut('files', fileItem); const ch2 = await idbGet('channels', appId); ch2.primaryFileId = fileItem.id; await idbPut('channels', ch2); alert('تم رفع ملف التطبيق وتعيينه كملف رئيسي'); closeModal(); manageApp(appId); };
+      inp.click();
+    };
+
+    const del = document.getElementById('deleteAppBtn');
+    if(del) del.onclick = async ()=>{ if(!confirm('هل تريد حذف هذا التطبيق وكل ملفاته وطلبياته؟ هذه العملية لا يمكن التراجع عنها.')) return; await deleteAppAndRelated(appId); alert('تم حذف التطبيق وكل ما يتعلق به'); closeModal(); await renderApp(); };
+
+    document.querySelectorAll('.viewOrder').forEach(btn=> btn.onclick=async e=>{ const ord = await idbGet('orders', e.target.dataset.id); showOrderDetails(ord); });
+  },120);
+}
+
+/* ---------------- delete app and related ---------------- */
+async function deleteAppAndRelated(appId){
+  const allFiles = await idbGetAll('files');
+  for(const f of allFiles.filter(x=>x.channelId===appId)){ await idbDelete('files', f.id); }
+  const allOrders = await idbGetAll('orders');
+  for(const o of allOrders.filter(x=>x.appId===appId)){ await idbDelete('orders', o.id); }
+  await idbDelete('channels', appId);
+}
+
+/* ---------------- orders global view & per-app ---------------- */
+async function renderOrders(){
+  const orders = await idbGetAll('orders');
+  if(!orders.length) return alert('لا توجد طلبات');
+  const html = orders.map(o=>`<div class="item"><div><strong>${escapeHtml(o.buyerName)}</strong><div class="meta">${escapeHtml(o.buyerEmail)} — ${new Date(o.createdAt).toLocaleString()}</div><div class="meta">التطبيق: ${escapeHtml(o.appId)}</div><div class="meta">الحالة: ${o.status}</div></div><div><button data-id="${o.id}" class="btn viewOrder">عرض</button></div></div>`).join('');
+  showModal(`<div class="modal"><h3>كل الطلبات</h3>${html}<div style="margin-top:10px"><button id="closeOrders" class="btn">إغلاق</button></div></div>`);
+  document.getElementById('closeOrders').onclick = closeModal;
+  setTimeout(()=> document.querySelectorAll('.viewOrder').forEach(b=> b.onclick=async e=>{ const o=await idbGet('orders', e.target.dataset.id); showOrderDetails(o); }),80);
+}
+
+async function renderOrdersForApp(appId){
+  const orders = (await idbGetAll('orders')).filter(o=> o.appId === appId);
+  if(!orders.length) return alert('لا طلبات لهذا التطبيق بعد');
+  const html = orders.map(o=>`<div class="item"><div><strong>${escapeHtml(o.buyerName)}</strong><div class="meta">${escapeHtml(o.buyerEmail)} — ${new Date(o.createdAt).toLocaleString()}</div><div class="meta">الجهاز: ${escapeHtml(o.phoneType||'')} ${escapeHtml(o.phoneModel||'')}</div><div class="meta">EID: ${escapeHtml(o.eid||'')}</div><div class="meta">الحالة: ${o.status}</div></div><div><button data-id="${o.id}" class="btn viewOrder">عرض</button></div></div>`).join('');
+  showModal(`<div class="modal"><h3>طلبات التطبيق</h3>${html}<div style="margin-top:10px"><button id="closeOrdersApp" class="btn">إغلاق</button></div></div>`);
+  document.getElementById('closeOrdersApp').onclick = closeModal;
+  setTimeout(()=> document.querySelectorAll('.viewOrder').forEach(b=> b.onclick=async e=>{ const o=await idbGet('orders', e.target.dataset.id); showOrderDetails(o); }),80);
+}
+
+/* ---------------- order details (عرض الحقول الجديدة، معاينة الإيصال، موافقة/رفض) ---------------- */
+function showOrderDetails(order){
+  const created = new Date(order.createdAt).toLocaleString();
+  let html = `<h3>تفاصيل الطلب</h3>`;
+  html += `<div class="form-row"><label>اسم المشتري</label><div class="small">${escapeHtml(order.buyerName)}</div></div>`;
+  html += `<div class="form-row"><label>الإيميل</label><div class="small">${escapeHtml(order.buyerEmail)}</div></div>`;
+  html += `<div class="form-row"><label>تاريخ الطلب</label><div class="small">${created}</div></div>`;
+  html += `<div class="form-row"><label>نوع الجوال</label><div class="small">${escapeHtml(order.phoneType||'')}</div></div>`;
+  html += `<div class="form-row"><label>موديل الجوال</label><div class="small">${escapeHtml(order.phoneModel||'')}</div></div>`;
+  html += `<div class="form-row"><label>EID / SEID</label><div class="small">${escapeHtml(order.eid||'')}</div></div>`;
+  html += `<div class="form-row"><label>حالة الطلب</label><div class="small">${escapeHtml(order.status)}</div></div>`;
+  if(order.receiptBlob) html += `<div class="form-row"><label>إيصال التحويل</label><div><button id="viewReceipt" class="btn">عرض الإيصال</button></div></div>`;
+  html += `<div class="form-row"><button id="approveOrder" class="btn">الموافقة وإرسال الملف عبر الإيميل</button> <button id="rejectOrder" class="btn">رفض الطلب</button> <button id="closeOrder" class="btn">إغلاق</button></div>`;
+  showModal(`<div class="modal">${html}</div>`);
+
+  if(order.receiptBlob) document.getElementById('viewReceipt').onclick = ()=> {
+    const url = URL.createObjectURL(order.receiptBlob);
+    const w = window.open('','_blank','noopener');
+    if(order.receiptBlob.type && order.receiptBlob.type.indexOf('image')===0) w.document.write(`<img src="${url}" style="max-width:100%">`);
+    else w.document.write(`<iframe src="${url}" style="width:100%;height:100vh;border:none"></iframe>`);
+  };
+
+  document.getElementById('approveOrder').onclick = async ()=>{ await approveOrder(order.id); closeModal(); await renderApp(); };
+  document.getElementById('rejectOrder').onclick = async ()=>{ if(!confirm('هل تريد رفض هذا الطلب؟')) return; order.status='rejected'; await idbPut('orders', order); alert('تم رفض الطلب'); closeModal(); await renderApp(); };
+  document.getElementById('closeOrder').onclick = closeModal;
+}
+
+/* ---------------- approve order (يصنع رابط Blob، يحدّث حالة، يفتح mailto مع نص الجهاز) ---------------- */
+async function approveOrder(orderId){
+  const ord = await idbGet('orders', orderId);
+  if(!ord) return alert('الطلب غير موجود');
+  const ch = await idbGet('channels', ord.appId);
+  const files = (await idbGetAll('files')).filter(f=>f.channelId===ord.appId);
+  if(!files.length) return alert('لا يوجد ملف مرتبط بهذا التطبيق. أضف ملفًا أولاً.');
+  const file = files.find(f=> f.id === ch.primaryFileId) || files[0];
+  ord.status = 'approved'; ord.approvedAt = Date.now(); ord.fileId = file.id;
+  await idbPut('orders', ord);
+  const subject = encodeURIComponent('توصيل ملف التطبيق — ' + (file.title || file.filename));
+  const body = encodeURIComponent('مرحباً ' + ord.buyerName + '\n\nتمت الموافقة على طلبك. يمكنك تنزيل الملف من الرابط المرفق أو إرساله كمرفق.\n\nتفاصيل جهازك:\n- النوع: ' + (ord.phoneType||'') + '\n- الموديل: ' + (ord.phoneModel||'') + '\n- EID/SEID: ' + (ord.eid||'') + '\n\nتحياتي.');
+  const blobUrl = URL.createObjectURL(file.blob);
+  showModal(`<div class="modal"><h3>تمت الموافقة</h3><div class="form-row"><label>رابط تنزيل محلي (انسخه وأرسله أو حمّله)</label><input id="localDl" value="${blobUrl}" readonly></div><div class="form-row"><button id="openDl" class="btn">فتح الرابط في تبويب جديد</button> <button id="copyDl" class="btn">نسخ الرابط</button></div><div class="form-row"><button id="mailtoBtn" class="btn">افتح عميل البريد لإرسال رسالة للمشتري</button> <button id="closeOk" class="btn">حسناً</button></div></div>`);
+  document.getElementById('openDl').onclick = ()=> window.open(blobUrl, '_blank');
+  document.getElementById('copyDl').onclick = ()=> { navigator.clipboard.writeText(blobUrl).then(()=> alert('تم نسخ الرابط')); };
+  document.getElementById('mailtoBtn').onclick = ()=> { window.location.href = `mailto:${encodeURIComponent(ord.buyerEmail)}?subject=${subject}&body=${body}`; };
+  document.getElementById('closeOk').onclick = ()=> { closeModal(); };
+}
+
+/* ---------------- student view ---------------- */
+async function renderStudentContent(){ const cont=$('#studentContent'); if(!cont) return; cont.innerHTML=''; const channels=await idbGetAll('channels'); if(!channels.length){ cont.innerHTML='<div class="small">لا يوجد تطبيقات بعد.</div>'; return; } cont.innerHTML = channels.map(ch=>{ const logo = ch.logoBlob ? `<img src="${URL.createObjectURL(ch.logoBlob)}" class="app-logo" alt="logo">` : `<div style="width:72px;height:72px;border-radius:12px;background:rgba(255,255,255,0.02);display:flex;align-items:center;justify-content:center;color:var(--muted)">لا شعار</div>`; return `<div class="item"><div class="channel-entry"><div>${logo}</div><div style="flex:1"><strong>${escapeHtml(ch.name)}</strong><div class="meta">${escapeHtml((ch.description||'').slice(0,140))}</div><div class="meta">السعر: ${ch.price||0} ريال</div></div></div><div style="display:flex;flex-direction:column;gap:6px"><button data-id="${ch.id}" class="btn viewDetails">تفاصيل</button><button data-id="${ch.id}" class="btn orderBtn">اطلب</button></div></div>`; }).join(''); setTimeout(()=>{ document.querySelectorAll('.orderBtn').forEach(b=> b.onclick=e=> showPurchaseModal(e.target.dataset.id)); document.querySelectorAll('.viewDetails').forEach(b=> b.onclick=e=> showProductDetails(e.target.dataset.id)); },50); }
+
+/* ---------------- file viewer ---------------- */
+function openFileViewer(fi){ if(!fi) return alert('الملف غير موجود'); const w=window.open('','_blank','noopener'); const isVideo=(fi.type||'').indexOf('video')===0; const isPdf=fi.type==='application/pdf'; const url=URL.createObjectURL(fi.blob); const title=escapeHtml(fi.title||fi.filename); const content=`<title>${title}</title><style>body{margin:0;background:#000;color:#fff;display:flex;align-items:center;justify-content:center;height:100vh}</style>`; w.document.write(content); if(isVideo) w.document.write(`<video controls autoplay style="max-width:100%;max-height:100vh" src="${url}"></video>`); else if(isPdf) w.document.write(`<iframe src="${url}" style="width:100%;height:100vh;border:none"></iframe>`); else w.document.write(`<pre style="color:#fff">نوع الملف: ${escapeHtml(fi.filename||fi.type)}\nيمكن تنزيله باستخدام الزر أدناه.</pre><div style="padding:12px"><a href="${url}" download="${escapeHtml(fi.filename||'file')}">تحميل الملف</a></div>`); w.addEventListener ? w.addEventListener('unload',()=>URL.revokeObjectURL(url)) : (w.onunload=()=>URL.revokeObjectURL(url)); }
+
+/* ---------------- anti-screenshot / UX protections ---------------- */
+(function antiScreenshot(){
+  const wm=document.getElementById('watermark');
+  function updateWM(){ wm.textContent=(currentUser && currentUser.email)? currentUser.email:'A+'; }
+  document.addEventListener('contextmenu',e=>{ e.preventDefault(); showBlock('منع قائمة السياق'); });
+  document.addEventListener('keydown',e=>{
+    if(e.key==='PrintScreen') showBlock('اكتشاف PrintScreen');
+    if(e.key==='F12'||(e.ctrlKey && e.shiftKey && e.key==='I')||(e.ctrlKey && e.key==='U')||(e.ctrlKey && e.key==='S')){ e.preventDefault(); showBlock('محاولة فتح أدوات المطور'); }
+    if(e.ctrlKey && (e.key==='p' || e.key==='P')){ showBlock('محاولة طباعة'); e.preventDefault(); }
+    if(e.ctrlKey && e.key==='c'){ showBlock('نسخ ممنوع'); }
+  });
+  document.addEventListener('copy',e=>{ e.preventDefault(); showBlock('نسخ ممنوع'); });
+  let lastHidden=0;
+  document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='hidden') lastHidden=Date.now(); else { if(lastHidden && (Date.now()-lastHidden)<1200) showBlock('تبديل سريع — سلوك مريب'); } updateWM(); });
+  window.addEventListener('beforeprint',()=> showBlock('محاولة طباعة'));
+  window.addEventListener('blur',()=>{ document.body.style.filter='blur(2px)'; setTimeout(()=>document.body.style.filter='none',1200); });
+  const ub=$('#unblockBtn'); if(ub) ub.onclick=()=>{ blocked=false; $('#blocker').style.display='none'; renderApp(); };
+  function showBlock(reason){ blocked=true; $('#blockReason').textContent=reason; $('#blocker').style.display='flex'; }
+  setInterval(updateWM,1000);
+})();
+
+/* ---------------- session expiry ---------------- */
+function scheduleSessionExpiryCheck(){ if(sessionChecker) clearInterval(sessionChecker); sessionChecker=setInterval(async()=>{ if(!sessionToken) return; if(Date.now()>sessionToken.expires){ try{ alert('انتهت الجلسة — سيتم تسجيل الخروج'); }catch(e){} await endSession(); } },60*1000); }
+
+/* ---------------- auth / register / verify / login / reset ---------------- */
+function showRegisterModal(){
+  const html=`<div class="modal" role="dialog" aria-modal="true">
+    <h3>تسجيل حساب جديد</h3>
+    <div class="form-row"><label>الدور</label><select id="regRole"><option value="teacher">مطوّر</option><option value="student">مستخدم</option></select></div>
+    <div class="form-row"><label>البريد الإلكتروني</label><input id="regEmail" type="email" placeholder="example@domain.com"></div>
+    <div class="form-row"><label>كلمة المرور</label><input id="regPwd" type="password"></div>
+    <div class="form-row"><label>تأكيد كلمة المرور</label><input id="regPwd2" type="password"></div>
+    <div class="form-row"><div class="pw-meter"><div id="pwBar" style="width:0%"></div></div><div class="note">الحد الأدنى: 8 محارف، حرف كبير، رقم ورمز</div></div>
+    <div class="form-row"><label><input id="agreeTerms" type="checkbox"> أوافق على الشروط</label></div>
+    <div class="form-row"><label><input id="rememberMe" type="checkbox"> تذكرني</label></div>
+    <div class="form-row"><button id="doRegister" class="btn">سجل الآن</button> <button id="cancelModal" class="btn">إلغاء</button></div>
+  </div>`;
+  showModal(html);
+  const pwdEl=document.getElementById('regPwd'); if(pwdEl) pwdEl.addEventListener('input',()=> updatePwMeterById('pwBar', pwdEl.value));
+  document.getElementById('doRegister').onclick=doRegister;
+  document.getElementById('cancelModal').onclick=closeModal;
+}
+
+function updatePwMeterById(idBar,val){ const el=document.getElementById(idBar); if(!el) return; let score=0; if(val.length>=8) score++; if(/[A-Z]/.test(val)) score++; if(/[0-9]/.test(val)) score++; if(/[^A-Za-z0-9]/.test(val)) score++; el.style.width=(score*25)+'%'; el.style.background=score<2? '#ff6b6b' : score===2? '#f59e0b' : '#4ade80'; }
+
+async function doRegister(){
+  const role=(document.getElementById('regRole')||{}).value||'student';
+  const email=((document.getElementById('regEmail')||{}).value||'').trim().toLowerCase();
+  const p1=(document.getElementById('regPwd')||{}).value||'';
+  const p2=(document.getElementById('regPwd2')||{}).value||'';
+  const agree=(document.getElementById('agreeTerms')||{}).checked||false;
+  const remember=(document.getElementById('rememberMe')||{}).checked||false;
+
+  if(!email||!p1||!p2) return alert('املأ جميع الحقول');
+  if(!simpleEmailCheck(email)) return alert('بريد إلكتروني غير صالح');
+  if(p1 !== p2) return alert('كلمة المرور غير متطابقة');
+  let sc=0; if(p1.length>=8) sc++; if(/[A-Z]/.test(p1)) sc++; if(/[0-9]/.test(p1)) sc++; if(/[^A-Za-z0-9]/.test(p1)) sc++;
+  if(sc < 3 && !confirm('كلمة المرور ضعيفة — الاستمرار؟')) return;
+  if(!agree) return alert('يجب الموافقة على الشروط');
+
+  try{
+    const all = await idbGetAll('accounts');
+    if(all.find(a=>a.email===email)) return alert('يوجد حساب بهذا البريد');
+    const hashed = await hashPassword(p1);
+    const id = uid();
+    const acc = { id, role, email, passwordHash: hashed, channelId:'', emailVerified:false, failedAttempts:0, lockedUntil:0, createdAt:Date.now() };
+    await idbPut('accounts', acc);
+    const code = (Math.floor(Math.random()*900000)+100000).toString();
+    await idbPut('verifications', { id, code, expires: Date.now()+1000*60*30, purpose:'verify' });
+    setTimeout(downloadAccountsBackup, 200);
+    alert('تم إنشاء الحساب. رمز التحقق (محاكاة): ' + code);
+    closeModal();
+    showVerifyModal(id);
+  }catch(err){
+    console.error('doRegister error', err);
+    alert('خطأ أثناء التسجيل: ' + (err && err.message ? err.message : String(err)));
+  }
+}
+
+function showVerifyModal(accountId){
+  showModal(`<div class="modal"><h3>تحقق البريد</h3>
+    <div class="form-row"><label>رمز التحقق (محاكاة)</label><input id="verifyCode"></div>
+    <div class="form-row"><button id="doVerify" class="btn">تحقق</button> <button id="resendCode" class="btn">إعادة إرسال</button></div>
+  </div>`);
+  document.getElementById('doVerify').onclick = async ()=>{
+    const code = (document.getElementById('verifyCode')||{}).value || '';
+    if(!code) return alert('أدخل الرمز');
+    const ver = await idbGet('verifications', accountId).catch(()=>null);
+    if(!ver) return alert('رمز غير موجود');
+    if(Date.now() > ver.expires) return alert('انتهت صلاحية الرمز');
+    if(code !== ver.code) return alert('رمز خاطئ');
+    const acc = await idbGet('accounts', accountId);
+    acc.emailVerified = true;
+    await idbPut('accounts', acc);
+    await idbDelete('verifications', accountId);
+    alert('تم تأكيد البريد. يمكنك تسجيل الدخول الآن.');
+    closeModal();
+  };
+  document.getElementById('resendCode').onclick = async ()=>{
+    const newCode = (Math.floor(Math.random()*900000)+100000).toString();
+    await idbPut('verifications', { id: accountId, code: newCode, expires: Date.now()+1000*60*30, purpose:'verify' });
+    alert('تم إعادة إرسال الرمز (محاكاة): ' + newCode);
+  };
+}
+
+function showLoginModal(){
+  showModal(`<div class="modal"><h3>تسجيل دخول</h3>
+    <div class="form-row"><label>البريد</label><input id="loginEmail" type="email"></div>
+    <div class="form-row"><label>كلمة المرور أو الكود</label><input id="loginPwd" type="password"></div>
+    <div class="form-row"><label><input id="rememberLogin" type="checkbox"> تذكرني</label></div>
+    <div class="form-row"><button id="doLogin" class="btn">دخول</button> <button id="forgotBtn" class="btn">نسيت كلمة المرور</button></div>
+  </div>`);
+  document.getElementById('doLogin').onclick = doLogin;
+  document.getElementById('forgotBtn').onclick = ()=>{ closeModal(); showForgotModal(); };
+}
+
+async function doLogin(){
+  try{
+    const email = ((document.getElementById('loginEmail')||{}).value||'').trim().toLowerCase();
+    const pwd = (document.getElementById('loginPwd')||{}).value||'';
+    const remember = (document.getElementById('rememberLogin')||{}).checked||false;
+    if(!email||!pwd) return alert('املأ الحقول');
+    const all = await idbGetAll('accounts');
+    const acc = all.find(a=>a.email===email);
+    if(!acc) return alert('حساب غير موجود');
+    if(acc.lockedUntil && Date.now() < acc.lockedUntil) return alert('الحساب مقفل مؤقتًا');
+    let ok = false;
+    try{ ok = await verifyPassword(pwd, acc.passwordHash); }catch(e){ ok=false; }
+    if(!ok && acc.oneTimeCode && pwd===acc.oneTimeCode) ok = true;
+    if(!ok){
+      acc.failedAttempts = (acc.failedAttempts||0)+1;
+      if(acc.failedAttempts >= 5){ acc.lockedUntil = Date.now() + 1000*60*15; acc.failedAttempts=0; await idbPut('accounts', acc); return alert('تم قفل الحساب لمدة 15 دقيقة'); }
+      await idbPut('accounts', acc);
+      return alert('كلمة المرور أو الكود غير صحيحة');
+    }
+    acc.failedAttempts = 0; acc.lockedUntil = 0;
+    await idbPut('accounts', acc);
+    if(!acc.emailVerified) return alert('البريد غير مؤكد — تحقق أولًا');
+    const s = await createSession(acc.id, remember);
+    currentUser = Object.assign({}, acc);
+    try{ sessionStorage.setItem('currentUser', JSON.stringify(currentUser)); }catch(e){}
+    closeModal();
+    await renderApp();
+    scheduleSessionExpiryCheck();
+  }catch(err){
+    console.error('doLogin err', err); alert('خطأ أثناء تسجيل الدخول: ' + (err && err.message ? err.message : String(err)));
+  }
+}
+
+function showForgotModal(){
+  showModal(`<div class="modal"><h3>استعادة الحساب</h3>
+    <div class="form-row"><label>البريد</label><input id="fpEmail" type="email"></div>
+    <div class="form-row"><button id="sendReset" class="btn">إرسال رمز استعادة</button></div>
+  </div>`);
+  document.getElementById('sendReset').onclick = async ()=>{
+    const email = ((document.getElementById('fpEmail')||{}).value||'').trim().toLowerCase();
+    if(!simpleEmailCheck(email)) return alert('بريد خاطئ');
+    const all = await idbGetAll('accounts');
+    const acc = all.find(a=>a.email===email);
+    if(!acc) return alert('لا يوجد حساب بهذا البريد');
+    const code = (Math.floor(Math.random()*900000)+100000).toString();
+    await idbPut('verifications', { id: acc.id, code, expires: Date.now()+1000*60*30, purpose:'reset' });
+    alert('رمز الاستعادة (محاكاة): ' + code);
+    closeModal();
+    showResetModal(acc.id);
+  };
+}
+function showResetModal(accountId){
+  showModal(`<div class="modal"><h3>إعادة تعيين كلمة المرور</h3>
+    <div class="form-row"><label>رمز الاستعادة</label><input id="resetCode"></div>
+    <div class="form-row"><label>كلمة مرور جديدة</label><input id="resetPwd" type="password"></div>
+    <div class="form-row"><label>تأكيد</label><input id="resetPwd2" type="password"></div>
+    <div class="form-row"><button id="doReset" class="btn">تعيين</button></div>
+  </div>`);
+  document.getElementById('doReset').onclick = async ()=>{
+    const code = (document.getElementById('resetCode')||{}).value || '';
+    const p1 = (document.getElementById('resetPwd')||{}).value || '';
+    const p2 = (document.getElementById('resetPwd2')||{}).value || '';
+    if(!code || !p1 || !p2) return alert('املأ الحقول');
+    if(p1 !== p2) return alert('كلمة المرور غير متطابقة');
+    const ver = await idbGet('verifications', accountId).catch(()=>null);
+    if(!ver || ver.purpose!=='reset') return alert('رمز غير صالح');
+    if(Date.now() > ver.expires) return alert('رمز منتهي');
+    if(code !== ver.code) return alert('رمز خاطئ');
+    const hashed = await hashPassword(p1);
+    const acc = await idbGet('accounts', accountId);
+    acc.passwordHash = hashed;
+    await idbPut('accounts', acc);
+    await idbDelete('verifications', accountId);
+    alert('تم تغيير كلمة المرور');
+    closeModal();
+  };
+}
+
+/* ---------------- expose debug helpers ---------------- */
+window.APLUS = { idbPut, idbGetAll, idbGet, idbDelete, downloadAccountsBackup, hashPassword, verifyPassword, endSession };
+
+/* ---------------- bootstrap ---------------- */
+(async function init(){
+  // bind hero buttons
+  document.getElementById('ctaRegister').onclick = ()=> showRegisterModal();
+  document.getElementById('openStore').onclick = ()=> { renderApp(); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+
+  try{
+    const s = await loadSessionFromStorage();
+    if(s){
+      sessionToken = s;
+      const user = await idbGet('accounts', s.userId).catch(()=>null);
+      if(user){ currentUser = user; try{ sessionStorage.setItem('currentUser', JSON.stringify(currentUser)); }catch(e){} }
+    }
+  }catch(e){ console.warn('session load failed', e); }
+  try{ const su = sessionStorage.getItem('currentUser'); if(!currentUser && su) currentUser = JSON.parse(su); }catch(e){}
+  try{ await renderApp(); }catch(err){ console.error('renderApp error', err); alert('خطأ داخلي: ' + (err && err.message ? err.message : String(err))); }
+  scheduleSessionExpiryCheck();
+})();
+
+</script>
+</body>
+</html>
