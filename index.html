@@ -5,6 +5,15 @@
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>إبصار — إدارة الحسابات والملفات (متكامل)</title>
   <meta name="description" content="نظام محلي لإدارة الحسابات، الاشتراكات، الشهادات، والملفات — إنشاء الحسابات بواسطة الأدمن فقط، واجهة متجاوبة وقوية." />
+
+  <!-- =======================
+       Google AdSense script
+       ملاحظة: هذا السكربت لا يغيّر من منطق التطبيق — فقط يُحمّل مكتبة الإعلانات.
+       استبدل client و data-ad-slot بالقيم الحقيقية لديك عند الحاجة.
+       ======================= -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3379548904465151"
+     crossorigin="anonymous"></script>
+
   <style>
     :root{ --bg:#071427; --card:#0b2233; --accent:#06b6d4; --muted:#9fb0c8; --glass: rgba(255,255,255,0.03); }
     *{box-sizing:border-box;font-family:Inter,system-ui,Segoe UI,Arial;direction:rtl}
@@ -96,7 +105,44 @@
       <main id="mainPanel" class="card"></main>
     </div>
 
+    <!-- =========================
+         Non-intrusive ad slot (بعد اللوحة الرئيسية، قبل الفوتر)
+         هذا المكان ثابت ولا يتداخل مع منطق JS الرئيسي.
+         استبدل data-ad-slot بالقيمة الحقيقية.
+         ========================= -->
+    <div style="margin-top:12px" aria-hidden="true">
+      <div class="card" style="padding:10px;text-align:center;">
+        <!-- ad: responsive — ضع هنا data-ad-slot الصحيح -->
+        <ins class="adsbygoogle"
+             style="display:block; max-width:100%; height:90px; margin:0 auto;"
+             data-ad-client="ca-pub-3379548904465151"
+             data-ad-slot="REPLACE_WITH_SLOT"
+             data-ad-format="auto"
+             data-full-width-responsive="true"></ins>
+        <script>
+          try{ (adsbygoogle = window.adsbygoogle || []).push({}); }catch(e){ console.warn('adsbygoogle push failed', e); }
+        </script>
+        <div class="small muted" style="margin-top:6px">إعلان (مكان هادئ — لا يؤثر على وظائف النظام)</div>
+      </div>
+    </div>
+
     <footer>جميع الحقوق محفوضه </footer>
+  </div>
+
+  <!-- =========================
+       احتياطي: مكان إعلان صغير تحت الـ wrap (لن يتداخل مع JS)
+       يمكنك حذف أحد الأماكن إذا أردت عرض إعلان واحد فقط.
+       ========================= -->
+  <div style="text-align:center;margin:8px 0" aria-hidden="true">
+    <ins class="adsbygoogle"
+         style="display:block; max-width:320px; height:50px; margin:0 auto;"
+         data-ad-client="ca-pub-3379548904465151"
+         data-ad-slot="REPLACE_WITH_SLOT"
+         data-ad-format="auto"
+         data-full-width-responsive="true"></ins>
+    <script>
+      try{ (adsbygoogle = window.adsbygoogle || []).push({}); }catch(e){ console.warn('adsbygoogle push failed', e); }
+    </script>
   </div>
 
   <div id="modalRoot" class="modal-backdrop" aria-hidden="true"></div>
@@ -109,6 +155,7 @@
    - الملفات مخزنة في objectStore 'files' مع حقل blob (Blob).
    - تصدير JSON لكل مستخدم يتضمن الملفات كمحتوى base64 حتى يستطيع المستخدم حفظ "حقّه".
    - إذا تم قفل الحساب (locked=true) فلن يستطيع المستخدم تسجيل الدخول لكن ملفاته تبقى.
+  ملاحظة: إضافة عناصر الإعلانات أعلاه تمت في أماكن ثابتة لا تؤثر على عناصر DOM التي يتعامل معها السكربت (leftPanel، mainPanel...).
    ============================================================ */
 
 const DB_NAME = 'ibsar_manager_v1';
@@ -245,21 +292,20 @@ async function renderDashboard(){ const area=$('#adminMainArea'); if(!area) retu
 /* ---------- Create user modal (admin) (unchanged) ---------- */
 function showCreateUserModal(){ showModal(`<div class="modal"><h3>إنشاء حساب جديد</h3>
   <div class="form-row"><label>اسم المستخدم (إجباري)</label><input id="cu_name" placeholder="اسم الشخص"></div>
-  <div class="form-row"><label>مدة الاشتراك بالشهور (افتراضي 1)</label><input id="cu_months" type="number" min="0" value="1"></div>
   <div class="form-row"><label>دور الحساب</label><select id="cu_role"><option value="user">مستخدم</option><option value="admin">أدمن</option></select></div>
   <div class="form-row"><button id="cu_create" class="btn">إنشاء</button> <button id="cu_cancel" class="btn">إلغاء</button></div>
 </div>`);
   document.getElementById('cu_cancel').onclick = closeModal;
   document.getElementById('cu_create').onclick = async ()=>{ 
-    const name = (document.getElementById('cu_name')||{}).value.trim(); const months = parseInt((document.getElementById('cu_months')||{}).value||'1'); const role = (document.getElementById('cu_role')||{}).value||'user';
+    const name = (document.getElementById('cu_name')||{}).value.trim(); const role = (document.getElementById('cu_role')||{}).value||'user';
     if(!name) return alert('اكتب اسم المستخدم');
     const email = generateEmailFromName(name);
     const plain = generatePassword();
     const hashed = await hashPassword(plain);
     const id = uid();
     const now = Date.now();
-    const subscriptionExpires = months>0 ? now + months*30*24*60*60*1000 : 0;
-    const acc = { id, name, email, passwordHash: hashed, role, mustChangePassword:true, subscriptionExpires: subscriptionExpires||0, subscriptionActive: months>0, certificateExpires: 0, emailVerified:true, createdAt: now, lockOnCertExpire:false, locked:false };
+    const subscriptionExpires = 0;
+    const acc = { id, name, email, passwordHash: hashed, role, mustChangePassword:true, subscriptionExpires: subscriptionExpires||0, subscriptionActive: false, certificateExpires: 0, emailVerified:true, createdAt: now, lockOnCertExpire:false, locked:false };
     await idbPut('accounts', acc);
     alert(`تم إنشاء الحساب.
 البريد: ${email}
@@ -565,3 +611,4 @@ window.IBSAR = { idbGetAll, idbPut, idbGet, idbDelete, createFolder, uploadFileO
 </script>
 </body>
 </html>
+
