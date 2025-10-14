@@ -536,7 +536,7 @@ function showLoginModal(){ showModal(`<div class="modal"><h3>تسجيل دخول
   <div class="form-row"><label>البريد</label><input id="loginEmail" type="email"></div>
   <div class="form-row"><label>كلمة المرور</label><input id="loginPwd" type="password"></div>
   <div class="form-row"><label><input id="rememberLogin" type="checkbox"> تذكرني</label></div>
-  <div class="form-row"><button id="doLogin" class="btn">دخول</button> <button id="forgotBtn" class="btn">نسيت كلمة المرور</button></div>
+  <div class="form-row"><button id="doLogin" class="btn">دخول</button> <button id="forgotBtn" class="btn"> </button></div>
 </div>`);
   document.getElementById('doLogin').onclick = doLogin;
   document.getElementById('forgotBtn').onclick = ()=>{ closeModal(); showForgotModal(); };
@@ -557,11 +557,11 @@ async function doLogin(){ try{
   }catch(e){ console.error(e); alert('خطأ في تسجيل الدخول'); } }
 
 /* ---------- forgot/reset (unchanged) ---------- */
-function showForgotModal(){ showModal(`<div class="modal"><h3></h3>
+function showForgotModal(){ showModal(`<div class="modal">استعاده<h3></h3>
   <div class="form-row"><label>البريد</label><input id="fpEmail" type="email"></div>
   <div class="form-row"><button id="sendReset" class="btn">إرسال رمز استعادة (محاكاة)</button></div>
 </div>`);
-  document.getElementById('sendReset').onclick = async ()=>{ const email = ((document.getElementById('fpEmail')||{}).value||'').trim().toLowerCase(); if(!simpleEmailCheck(email)) return alert('بريد خاطئ'); const all = await idbGetAll('accounts'); const acc = all.find(a=>a.email===email); if(!acc) return alert('لا يوجد حساب بهذا البريد'); const code = (Math.floor(Math.random()*900000)+100000).toString(); await idbPut('verifications',{id:acc.id,code,expires:Date.now()+1000*60*30,purpose:'reset'}); alert('رمز الاستعادة (محاكاة): ' + code); closeModal(); showResetModal(acc.id); } }
+  document.getElementById('sendReset').onclick = async ()=>{ const email = ((document.getElementById('fpEmail')||{}).value||'').trim().toLowerCase(); if(!simpleEmailCheck(email)) return alert('بريد خاطئ'); const all = await idbGetAll('accounts'); const acc = all.find(a=>a.email===email); if(!acc) return alert('لا يوجد حساب بهذا البريد'); const code = (Math.floor(Math.random()*900000)+100000).toString(); await idbPut('verifications',{id:acc.id,code,expires:Date.now()+1000*60*30,purpose:'reset'}); alert('رقم طلبك(): ' + code); closeModal(); showResetModal(acc.id); } }
 function showResetModal(accountId){ showModal(`<div class="modal"><h3>إعادة تعيين كلمة المرور</h3>
   <div class="form-row"><label>رمز الاستعادة</label><input id="resetCode"></div>
   <div class="form-row"><label>كلمة مرور جديدة</label><input id="resetPwd" type="password"></div>
